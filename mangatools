@@ -1,0 +1,71 @@
+#!/bin/bash
+mkdir -p $HOME/.baka_updates
+pushd $HOME/.baka_updates
+touch mangadb
+
+#Displays help then exits
+show_help() {
+cat << EOF
+USAGE: ${0##*/} [options...]
+A few tools to be used with mangaupdate.
+
+-h				Display this help and exit
+-a	url:name	Add a list of manga with an optional name
+-s	name		Searches for a manga with the specified name in the list of added manga
+EOF
+}
+
+#Adds a list of manga in form url:name
+#TODO: Add support for spaces in names
+manga_add() {
+	for item in "$@"
+	do
+		if [[ $item != *"mangaupdates"* ]]
+		then
+			echo "Invalid format for $item"
+			exit 1
+		fi
+		manga=${item%:*}
+		name=${item##*:}
+
+		echo $manga $name >> mangalist
+	done
+
+}
+
+#Searchs for the manga
+manga_search() {
+	if grep -q $1 mangalist
+	then
+		echo "$1 exists"
+	else
+		echo "$1 does not exist"
+	fi
+}
+
+if [ "$#" == "0" ]; then
+	show_help
+	exit 1
+fi
+
+while :; do
+	case $1 in
+		-h|-\?|--help)   # Show help then exit
+			show_help
+			exit
+			;;
+		-a|--add)
+			shift
+			manga_add $*
+			exit
+			;;
+		-s|--search)
+			shift
+			manga_search "$*"
+			exit
+			;;
+		*)
+			break
+	esac
+	shift
+done

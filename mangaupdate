@@ -1,0 +1,47 @@
+#!/bin/bash
+#TODO:Probably change the date check to date later than last date in db
+
+if [ ! -d "~/.baka_updates" ]
+then
+	echo "Run mangatools first!"
+	exit 1
+fi
+
+pushd $HOME/.baka_updates
+
+update_file=$HOME/New\ Manga\!
+dom=$(date +%d) #Day of month
+date0=$(date +%D) #Today
+date1=$(date +%m/$(expr $dom - 1)/%y) #Yesterday
+new_manga=false
+
+check_manga() {
+	if grep -q $2 temp #If the current date was found
+	then
+		if ! grep -q "$1 $2" mangadb #Check if we've already downloaded it
+		then
+			echo "$1 $2" >> mangadb #Add the entry
+			echo "xdg-open \"$1\"" >> "$update_file"
+			new_manga=true
+		fi
+	fi
+}
+
+for i in $(cat mangalist)
+do
+	if [[ $i == *"mangaupdates.com"* ]] #check for valid url
+	then
+		wget $i -qO temp
+		check_manga $i $date0	#check today
+		check_manga $i $date1	#check yesterday
+	fi
+done
+
+if [ "$new_manga" = true ] ; then
+	echo "#!/bin/bash" | cat - "$update_file" > appended_file
+	mv appended_file "$update_file"
+	echo "rm ~/New\ Manga\!" >> "$update_file"
+	chmod +x "$update_file"
+fi
+
+rm temp
