@@ -1,7 +1,7 @@
 #!/bin/bash
 #TODO:Probably change the date check to date later than last date in db
 
-if [ ! -d "~/.baka_updates" ]
+if [ ! -d "$HOME/.baka_updates" ]
 then
 	echo "Run mangatools first!"
 	exit 1
